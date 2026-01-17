@@ -146,7 +146,7 @@ async function getUserInput() {
       type: 'confirm',
       name: 'addTVOverlay',
       message: 'Add vintage TV effect overlay (particles and grain)?',
-      default: true
+      default: false
     },
     {
       type: 'number',
