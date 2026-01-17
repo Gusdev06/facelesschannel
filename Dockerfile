@@ -31,4 +31,4 @@ RUN mkdir -p output/audio output/images output/subtitles output/thumbnails outpu
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "src/main.js"]
+CMD ["node", "src/api/server.js"]
