@@ -74,11 +74,11 @@ export async function generateVideo(config) {
     musicFileName,
     musicVolume = 0.15,
     quality = 'medium',
-    addTVOverlay = true,
+    addTVOverlay,
     overlayOpacity = 0.3,
     generateThumbnail = true,
     thumbnailMode = 'single',
-    onProgress = () => {}
+    onProgress = () => { }
   } = config;
 
   const startTime = Date.now();
@@ -261,7 +261,7 @@ export async function generateVideo(config) {
 
     // Cleanup temporary files
     if (musicPath) {
-      await fs.unlink(musicPath).catch(() => {});
+      await fs.unlink(musicPath).catch(() => { });
     }
 
     const endTime = Date.now();
@@ -292,7 +292,7 @@ export async function generateVideo(config) {
   } catch (error) {
     // Cleanup on error
     if (musicPath) {
-      await fs.unlink(musicPath).catch(() => {});
+      await fs.unlink(musicPath).catch(() => { });
     }
 
     throw error;
