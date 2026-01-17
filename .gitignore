@@ -1,0 +1,41 @@
+# Environment variables
+.env
+
+# Dependencies
+node_modules/
+
+# Output files
+output/images/*.jpg
+output/images/*.png
+output/audio/*.mp3
+output/subtitles/*.srt
+output/videos/*.mp4
+
+# Keep directories but ignore content
+!output/images/.gitkeep
+!output/audio/.gitkeep
+!output/subtitles/.gitkeep
+!output/videos/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+filelist.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Assets (música de fundo - usuário deve adicionar)
+assets/*.mp3
+!assets/.gitkeep
