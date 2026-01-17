@@ -1,13 +1,16 @@
-# Base image with Node.js
-FROM node:20-bullseye-slim
+# Base image with Node.js (usando bookworm que é mais estável)
+FROM node:20-bookworm-slim
 
-# Install FFmpeg and other dependencies
-RUN apt-get update && apt-get install -y \
+# Install FFmpeg and build tools with retry logic
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     ffmpeg \
     python3 \
     make \
     g++ \
-    && rm -rf /var/lib/apt/lists/*
+    || (apt-get update && apt-get install -y --no-install-recommends ffmpeg python3 make g++) \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Set working directory
 WORKDIR /app
@@ -16,20 +19,16 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --production
+RUN npm ci --only=production
 
 # Copy application code
 COPY . .
 
-# Create output directory for generated videos
-RUN mkdir -p output
+# Create output directories
+RUN mkdir -p output/audio output/images output/subtitles output/thumbnails output/videos
 
-# Expose the API port
+# Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
-
-# Default command (can be overridden)
-CMD ["npm", "run", "api"]
+# Start the application
+CMD ["node", "src/main.js"]
