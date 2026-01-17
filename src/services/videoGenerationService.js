@@ -58,6 +58,7 @@ const OUTPUT_PATHS = {
  * @param {string} config.script - Video script text
  * @param {Buffer} [config.musicBuffer] - Background music file buffer
  * @param {string} [config.musicFileName] - Background music file name
+ * @param {boolean} [config.useDefaultMusic=false] - Use default music from assets folder
  * @param {number} [config.musicVolume=0.15] - Music volume (0.0 - 1.0)
  * @param {string} [config.quality='medium'] - Video quality preset (fast, medium, slow)
  * @param {boolean} [config.addTVOverlay=true] - Add vintage TV effect
@@ -72,6 +73,7 @@ export async function generateVideo(config) {
     script,
     musicBuffer,
     musicFileName,
+    useDefaultMusic = true,
     musicVolume = 0.15,
     quality = 'medium',
     addTVOverlay,
@@ -186,15 +188,27 @@ export async function generateVideo(config) {
     // STEP 9: Add Background Music
     let finalAudioPath = narrationPath;
 
-    if (musicBuffer) {
-      onProgress({ step: 9, message: 'Uploading and adding background music...' });
+    if (musicBuffer || useDefaultMusic) {
+      onProgress({ step: 9, message: 'Adding background music...' });
 
-      // Upload music to Supabase
-      const musicUploadResult = await uploadMusic(musicBuffer, musicFileName);
+      if (useDefaultMusic) {
+        // Use default music from assets folder
+        musicPath = path.join(OUTPUT_PATHS.assets, 'background_music.mp3');
 
-      // Save music temporarily for processing
-      musicPath = path.join(OUTPUT_PATHS.audio, `temp_music_${Date.now()}.mp3`);
-      await fs.writeFile(musicPath, musicBuffer);
+        // Verify if default music exists
+        try {
+          await fs.access(musicPath);
+        } catch (error) {
+          throw new Error('Default music file not found in assets folder');
+        }
+      } else {
+        // Upload custom music to Supabase
+        const musicUploadResult = await uploadMusic(musicBuffer, musicFileName);
+
+        // Save music temporarily for processing
+        musicPath = path.join(OUTPUT_PATHS.audio, `temp_music_${Date.now()}.mp3`);
+        await fs.writeFile(musicPath, musicBuffer);
+      }
 
       const audioWithMusicPath = path.join(OUTPUT_PATHS.audio, `final_audio_${Date.now()}.mp3`);
       finalAudioPath = await addBackgroundMusic(
@@ -259,8 +273,8 @@ export async function generateVideo(config) {
       }
     }
 
-    // Cleanup temporary files
-    if (musicPath) {
+    // Cleanup temporary files (only delete custom music, not default music)
+    if (musicPath && !useDefaultMusic) {
       await fs.unlink(musicPath).catch(() => { });
     }
 
@@ -290,8 +304,8 @@ export async function generateVideo(config) {
     return result;
 
   } catch (error) {
-    // Cleanup on error
-    if (musicPath) {
+    // Cleanup on error (only delete custom music, not default music)
+    if (musicPath && !useDefaultMusic) {
       await fs.unlink(musicPath).catch(() => { });
     }
 

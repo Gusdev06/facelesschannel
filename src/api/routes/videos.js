@@ -11,6 +11,7 @@ const router = express.Router();
  * Body (multipart/form-data):
  * - script (required): Video script text
  * - musicFile (optional): Background music file (MP3/WAV)
+ * - useDefaultMusic (optional): true|false - Use default music from assets folder
  * - musicVolume (optional): Music volume 0.0-1.0 (default: 0.15)
  * - quality (optional): fast|medium|slow (default: medium)
  * - addTVOverlay (optional): true|false (default: true)
@@ -20,7 +21,7 @@ const router = express.Router();
  */
 router.post('/', upload.single('musicFile'), async (req, res, next) => {
   try {
-    const { script, musicVolume, quality, addTVOverlay, overlayOpacity, generateThumbnail, thumbnailMode } = req.body;
+    const { script, useDefaultMusic, musicVolume, quality, addTVOverlay, overlayOpacity, generateThumbnail, thumbnailMode } = req.body;
 
     // Validate required fields
     if (!script || script.trim().length === 0) {
@@ -81,12 +82,14 @@ router.post('/', upload.single('musicFile'), async (req, res, next) => {
     // Parse boolean fields
     const parsedAddTVOverlay = addTVOverlay === 'false' ? false : true;
     const parsedGenerateThumbnail = generateThumbnail === 'false' ? false : true;
+    const parsedUseDefaultMusic = useDefaultMusic === 'true' ? true : false;
 
     // Prepare job data
     const jobData = {
       script: script.trim(),
       musicBuffer: req.file ? Array.from(req.file.buffer) : null, // Convert Buffer to array for Redis
       musicFileName: req.file ? req.file.originalname : null,
+      useDefaultMusic: parsedUseDefaultMusic,
       musicVolume: parsedMusicVolume,
       quality: parsedQuality,
       addTVOverlay: parsedAddTVOverlay,

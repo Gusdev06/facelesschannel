@@ -82,7 +82,7 @@ export async function getJobStatus(jobId) {
 export const videoWorker = new Worker(
   'video-generation',
   async (job) => {
-    const { script, musicBuffer, musicFileName, musicVolume, quality, addTVOverlay, overlayOpacity, generateThumbnail, thumbnailMode } = job.data;
+    const { script, musicBuffer, musicFileName, useDefaultMusic, musicVolume, quality, addTVOverlay, overlayOpacity, generateThumbnail, thumbnailMode } = job.data;
 
     // Progress callback
     const onProgress = (progressData) => {
@@ -111,6 +111,7 @@ export const videoWorker = new Worker(
         script,
         musicBuffer: musicBuffer ? Buffer.from(musicBuffer) : null,
         musicFileName,
+        useDefaultMusic,
         musicVolume,
         quality,
         addTVOverlay,
