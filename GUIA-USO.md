@@ -105,7 +105,7 @@ REPLICATE_API_KEY=r8_...
 - Sincronização imperfeita
 - Atrasos/adiantamentos no karaoke
 
-### Agora (solução
+### Agora (solução):
 1. **TTS OpenAI** gera o áudio
 2. **Whisper API** extrai timestamps REAIS de cada palavra
 3. **Legendas ASS** usam timestamps precisos
