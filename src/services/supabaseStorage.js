@@ -7,8 +7,14 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Missing Supabase environment variables!');
+  console.error(`   SUPABASE_URL: ${supabaseUrl ? 'SET' : 'MISSING'}`);
+  console.error(`   SUPABASE_ANON_KEY: ${supabaseKey ? 'SET' : 'MISSING'}`);
   throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables');
 }
+
+console.log('✅ Supabase client initialized');
+console.log(`   URL: ${supabaseUrl}`);
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -31,6 +37,9 @@ const BUCKETS = {
 export async function uploadToSupabase(fileBuffer, fileName, bucketName, contentType) {
   const filePath = `${Date.now()}-${fileName}`;
 
+  console.log(`📤 Uploading to Supabase bucket '${bucketName}': ${fileName}`);
+  console.log(`   File size: ${(fileBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+
   const { data, error } = await supabase.storage
     .from(bucketName)
     .upload(filePath, fileBuffer, {
@@ -39,6 +48,7 @@ export async function uploadToSupabase(fileBuffer, fileName, bucketName, content
     });
 
   if (error) {
+    console.error(`❌ Supabase upload failed for ${fileName}:`, error);
     throw new Error(`Supabase upload failed: ${error.message}`);
   }
 
@@ -46,6 +56,8 @@ export async function uploadToSupabase(fileBuffer, fileName, bucketName, content
   const { data: urlData } = supabase.storage
     .from(bucketName)
     .getPublicUrl(data.path);
+
+  console.log(`✅ Upload successful: ${urlData.publicUrl}`);
 
   return {
     url: urlData.publicUrl,
@@ -61,6 +73,7 @@ export async function uploadToSupabase(fileBuffer, fileName, bucketName, content
  * @returns {Promise<{url: string, path: string}>}
  */
 export async function uploadFileToSupabase(localPath, bucketName, contentType) {
+  console.log(`📂 Reading file for upload: ${localPath}`);
   const fileBuffer = await fs.readFile(localPath);
   const fileName = path.basename(localPath);
   return uploadToSupabase(fileBuffer, fileName, bucketName, contentType);
