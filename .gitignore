@@ -36,6 +36,5 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Assets (música de fundo - usuário deve adicionar)
-assets/*.mp3
+# Assets
 !assets/.gitkeep
