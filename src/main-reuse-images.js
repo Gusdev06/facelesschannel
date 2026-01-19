@@ -148,7 +148,7 @@ async function getUserInput(availableImages) {
       name: 'musicPath',
       message: 'Enter path to background music file (MP3):',
       when: (answers) => answers.addMusic,
-      default: path.join(OUTPUT_PATHS.assets, 'background-music.mp3')
+      default: path.join(OUTPUT_PATHS.assets, 'background_music.mp3')
     },
     {
       type: 'number',
