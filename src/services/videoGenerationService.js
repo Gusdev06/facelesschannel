@@ -229,11 +229,11 @@ export async function generateVideo(config) {
       subtitlePath,
       videoOutputPath,
       {
-        resolution: '1920:1080',
-        fps: 30,
-        crf: quality === 'fast' ? 28 : quality === 'slow' ? 18 : 22,
-        preset: quality,
-        transitionDuration: 0.5,
+        resolution: '1280:720', // Reduzido para 720p para melhor performance na VPS
+        fps: 24, // Reduzido para 24fps para melhor performance
+        crf: quality === 'fast' ? 30 : quality === 'slow' ? 20 : 24,
+        preset: 'ultrafast', // Força ultrafast para VPS
+        transitionDuration: 0.3, // Transições mais curtas
         overlayVideoPath: addTVOverlay ? path.join(OUTPUT_PATHS.assets, 'video.mp4') : null,
         overlayOpacity: overlayOpacity || 0.3
       }

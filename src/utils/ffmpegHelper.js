@@ -232,12 +232,17 @@ export async function compileVideoWithEffects(imagePaths, audioPath, srtPath, ou
         // Não precisa mapear [final] novamente, já está mapeado pelo complexFilter
         `-map ${imagePaths.length}:a`,
         '-c:v libx264',
-        `-preset ${preset}`,
+
+        // OTIMIZAÇÕES PARA VPS: preset ultrafast e threads limitados
+        `-preset ultrafast`,
+        `-threads 2`,
         `-crf ${crf}`,
+
         '-pix_fmt yuv420p',
         `-r ${fps}`,
         '-c:a aac',
-        '-b:a 192k',
+        '-b:a 128k', // Reduzido de 192k para 128k
+        '-movflags +faststart', // Otimiza para streaming
         '-shortest'
       ])
       .output(outputPath)

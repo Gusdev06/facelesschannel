@@ -5,7 +5,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import videoRoutes from './routes/videos.js';
 import { validateFFmpeg } from '../utils/ffmpegHelper.js';
-import './queue/videoQueue.js'; // Initialize worker
 
 dotenv.config();
 

@@ -1,12 +1,12 @@
 import express from 'express';
 import upload from '../middleware/upload.js';
-import { addVideoJob, getJobStatus } from '../queue/videoQueue.js';
+import { createVideoJob, getJobStatus } from '../services/jobManager.js';
 
 const router = express.Router();
 
 /**
  * POST /api/videos
- * Create a new video generation job
+ * Create a video generation job (async)
  *
  * Body (multipart/form-data):
  * - script (required): Video script text
@@ -87,7 +87,7 @@ router.post('/', upload.single('musicFile'), async (req, res, next) => {
     // Prepare job data
     const jobData = {
       script: script.trim(),
-      musicBuffer: req.file ? Array.from(req.file.buffer) : null, // Convert Buffer to array for Redis
+      musicBuffer: req.file ? req.file.buffer : null,
       musicFileName: req.file ? req.file.originalname : null,
       useDefaultMusic: parsedUseDefaultMusic,
       musicVolume: parsedMusicVolume,
@@ -98,9 +98,10 @@ router.post('/', upload.single('musicFile'), async (req, res, next) => {
       thumbnailMode: parsedThumbnailMode
     };
 
-    // Add job to queue
-    const jobId = await addVideoJob(jobData);
+    // Create job and start processing in background (no await - returns immediately)
+    const jobId = createVideoJob(jobData);
 
+    // Return immediately with job info
     res.status(202).json({
       jobId,
       message: 'Video generation job created',
@@ -120,7 +121,7 @@ router.get('/:jobId', async (req, res, next) => {
   try {
     const { jobId } = req.params;
 
-    const jobStatus = await getJobStatus(jobId);
+    const jobStatus = getJobStatus(jobId);
 
     if (!jobStatus) {
       return res.status(404).json({
