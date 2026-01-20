@@ -6,9 +6,12 @@ dotenv.config();
 
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY;
 
-// Modelo Flux Schnell para geração de imagens
-const FLUX_MODEL = 'black-forest-labs/flux-schnell';
-const REPLICATE_PREDICTIONS_URL = `https://api.replicate.com/v1/models/bytedance/seedream-4/predictions`;
+// Modelos disponíveis para geração de imagens
+export const MODELS = {
+  SEEDREAM: 'bytedance/seedream-4',
+  NANO_BANANA_PRO: 'google/nano-banana-pro'
+};
+
 const REPLICATE_STATUS_URL = 'https://api.replicate.com/v1/predictions';
 
 /**
@@ -19,35 +22,58 @@ const REPLICATE_STATUS_URL = 'https://api.replicate.com/v1/predictions';
  */
 async function createPrediction(prompt, options = {}) {
   const {
+    model = MODELS.SEEDREAM,
     width = 1920,
     height = 1080,
     aspectRatio = '16:9',
+    resolution = '2K',
     outputFormat = 'jpg',
     outputQuality = 90,
-    safetyTolerance = 2
+    safetyTolerance = 2,
+    safetyFilterLevel = 'block_only_high'
   } = options;
 
   if (!REPLICATE_API_KEY) {
     throw new Error('REPLICATE_API_KEY not found in environment variables');
   }
 
+  // URL da API baseada no modelo
+  const apiUrl = `https://api.replicate.com/v1/models/${model}/predictions`;
+
+  // Constrói os parâmetros de input baseado no modelo
+  let input;
+
+  if (model === MODELS.NANO_BANANA_PRO) {
+    // Parâmetros específicos do nano-banana-pro
+    input = {
+      prompt,
+      resolution,
+      image_input: [],
+      aspect_ratio: aspectRatio,
+      output_format: outputFormat,
+      safety_filter_level: safetyFilterLevel
+    };
+  } else {
+    // Parâmetros padrão para seedream-4 e outros
+    input = {
+      prompt,
+      aspect_ratio: aspectRatio,
+      output_format: outputFormat,
+      output_quality: outputQuality,
+      safety_tolerance: safetyTolerance,
+      prompt_upsampling: false
+    };
+  }
+
   try {
-    const response = await fetch(REPLICATE_PREDICTIONS_URL, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${REPLICATE_API_KEY}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'wait'
       },
-      body: JSON.stringify({
-        input: {
-          prompt,
-          aspect_ratio: aspectRatio,
-          output_format: outputFormat,
-          output_quality: outputQuality,
-          safety_tolerance: safetyTolerance,
-          prompt_upsampling: false
-        }
-      })
+      body: JSON.stringify({ input })
     });
 
     if (!response.ok) {
@@ -136,56 +162,44 @@ async function waitForPrediction(statusUrl, maxAttempts = 60, interval = 2000) {
  * @param {string} outputPath - Caminho de saída
  * @returns {Promise<string>} Caminho do arquivo salvo
  */
-async function downloadImage(imageUrl, outputPath, retries = 3) {
-  for (let attempt = 0; attempt < retries; attempt++) {
-    try {
-      if (!imageUrl) {
-        throw new Error('Image URL is undefined or null');
-      }
-
-      if (attempt > 0) {
-        console.log(`   🔄 Download retry ${attempt}/${retries - 1} after 3s...`);
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-
-      console.log(`   📥 Downloading from: ${imageUrl}`);
-
-      const response = await fetch(imageUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'image/*'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const arrayBuffer = await response.arrayBuffer();
-
-      if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-        throw new Error('Downloaded image is empty');
-      }
-
-      await fs.writeFile(outputPath, Buffer.from(arrayBuffer));
-      console.log(`   💾 Saved to: ${outputPath}`);
-      return outputPath;
-
-    } catch (error) {
-      const errorDetails = {
-        message: error.message,
-        code: error.code,
-        url: imageUrl
-      };
-
-      // If it's the last attempt, throw the error
-      if (attempt === retries - 1) {
-        console.error('❌ Image download error (final attempt):', errorDetails);
-        throw new Error(`Failed to download image: ${error.message} (URL: ${imageUrl})`);
-      }
-
-      console.error(`❌ Image download error (attempt ${attempt + 1}):`, errorDetails);
+async function downloadImage(imageUrl, outputPath) {
+  try {
+    if (!imageUrl) {
+      throw new Error('Image URL is undefined or null');
     }
+
+    console.log(`   📥 Downloading from: ${imageUrl}`);
+
+    const response = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'image/*'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      throw new Error('Downloaded image is empty');
+    }
+
+    await fs.writeFile(outputPath, Buffer.from(arrayBuffer));
+    console.log(`   💾 Saved to: ${outputPath}`);
+    return outputPath;
+
+  } catch (error) {
+    const errorDetails = {
+      message: error.message,
+      code: error.code,
+      url: imageUrl
+    };
+
+    console.error('❌ Image download error:', errorDetails);
+    throw new Error(`Failed to download image: ${error.message} (URL: ${imageUrl})`);
   }
 }
 
@@ -198,8 +212,10 @@ async function downloadImage(imageUrl, outputPath, retries = 3) {
  */
 export async function generateImage(prompt, outputPath, options = {}) {
   try {
+    const model = options.model || MODELS.SEEDREAM;
     // Inicia predição
     console.log(`   Starting prediction for: ${path.basename(outputPath)}`);
+    console.log(`   Model: ${model}`);
     console.log(`   Prompt: ${prompt.substring(0, 100)}...`);
     const prediction = await createPrediction(prompt, options);
     console.log(`   🆔 Prediction ID: ${prediction.id}`);
@@ -232,19 +248,18 @@ export async function generateImage(prompt, outputPath, options = {}) {
 }
 
 /**
- * Gera múltiplas imagens em batch com retry e rate limiting
+ * Gera múltiplas imagens em batch com rate limiting
  * @param {Array} prompts - Array de objetos com prompt e caminho
  * @param {object} options - Opções de geração
  * @param {number} concurrency - Número de gerações simultâneas
  * @param {number} delayBetweenRequests - Delay em ms entre requisições
- * @param {number} maxRetries - Número máximo de tentativas
  * @returns {Promise<Array>} Array de caminhos das imagens geradas
  */
-export async function generateImagesInBatch(prompts, options = {}, concurrency = 1, delayBetweenRequests = 12000, maxRetries = 3) {
+export async function generateImagesInBatch(prompts, options = {}, concurrency = 1, delayBetweenRequests = 12000) {
   console.log(`\n🎨 Generating ${prompts.length} images with Replicate...`);
   console.log(`   Concurrency: ${concurrency} images at a time`);
   console.log(`   Delay between requests: ${delayBetweenRequests / 1000}s`);
-  console.log(`   Max retries per image: ${maxRetries}`);
+  console.log(`   No retries - single attempt only`);
 
   const results = [];
   const errors = [];
@@ -255,44 +270,14 @@ export async function generateImagesInBatch(prompts, options = {}, concurrency =
     console.log(`\n📦 Batch ${Math.floor(i / concurrency) + 1}/${Math.ceil(prompts.length / concurrency)}`);
 
     const batchPromises = batch.map(async (item) => {
-      let lastError = null;
-
-      // Retry logic with exponential backoff
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          if (attempt > 0) {
-            const retryDelay = Math.min(30000, delayBetweenRequests * Math.pow(2, attempt - 1));
-            console.log(`   🔄 Retry ${attempt}/${maxRetries} for ${path.basename(item.outputPath)} (waiting ${retryDelay / 1000}s)...`);
-            await new Promise(resolve => setTimeout(resolve, retryDelay));
-          }
-
-          const imagePath = await generateImage(item.prompt, item.outputPath, options);
-          return { success: true, path: imagePath, prompt: item };
-        } catch (error) {
-          lastError = error;
-
-          // Check if it's a rate limit error
-          if (error.message.includes('throttled') || error.message.includes('rate limit')) {
-            // Extract retry_after from error message if available
-            const retryMatch = error.message.match(/resets in ~(\d+)s/);
-            if (retryMatch && attempt < maxRetries) {
-              const retryAfter = parseInt(retryMatch[1]) * 1000;
-              console.log(`   ⏳ Rate limited. Waiting ${retryAfter / 1000}s before retry...`);
-              await new Promise(resolve => setTimeout(resolve, retryAfter + 1000));
-              continue;
-            }
-          }
-
-          // If not a rate limit error or max retries reached, break
-          if (attempt === maxRetries) {
-            break;
-          }
-        }
+      try {
+        const imagePath = await generateImage(item.prompt, item.outputPath, options);
+        return { success: true, path: imagePath, prompt: item };
+      } catch (error) {
+        console.error(`❌ Failed to generate ${path.basename(item.outputPath)}:`, error.message);
+        errors.push({ prompt: item, error: error.message });
+        return { success: false, prompt: item, error: error.message };
       }
-
-      // All retries failed
-      errors.push({ prompt: item, error: lastError.message });
-      return { success: false, prompt: item, error: lastError.message };
     });
 
     const batchResults = await Promise.all(batchPromises);

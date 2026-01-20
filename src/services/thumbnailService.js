@@ -1,7 +1,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import path from 'path';
-import { generateImage } from './replicateService.js';
+import { generateImage, MODELS } from './replicateService.js';
 import { cleanThumbnailResponse } from '../utils/jsonCleaner.js';
 import { createViralThumbnailWithText } from '../utils/ffmpegHelper.js';
 
@@ -53,13 +53,17 @@ CORE PRINCIPLES FOR VIRAL THUMBNAILS:
 
 5. TEXT INTEGRATION (CRITICAL):
    - The text hook MUST be painted/inscribed INTO the image itself
-   - Text should look like old illuminated manuscript lettering
-   - OR like carved stone inscriptions
-   - OR like painted text on ancient canvas
-   - Text style: weathered, aged, classical typography
-   - Text color: faded gold/white/cream on dark background
+   - Text MUST be BRIGHT, CLEAR and HIGHLY VISIBLE
+   - Text should look like old illuminated manuscript lettering but with MODERN CLARITY
+   - OR like carved stone inscriptions with bright golden glow
+   - OR like painted text on ancient canvas with luminous colors
+   - Text style: bold, thick, classical typography with strong outlines
+   - Text color: BRIGHT COLORS ONLY - brilliant white, vibrant gold, bright yellow, luminous cream
+   - Text must have HIGH CONTRAST against dark background (black, deep blue, dark purple)
+   - Text should be LARGE, BOLD and IMPOSSIBLE TO MISS
+   - Add subtle glow or outline effect to make text pop and stand out
    - Position text at [top/bottom] as specified
-   - Text should feel like part of the historical painting, not a modern addition
+   - Text should feel like part of the historical painting but with maximum readability
 
 6. TEXT HOOK FORMULA (15-35 characters):
    - Use: "WHAT?!", "IMPOSSIBLE", "EXPOSED", "SECRET", "SHOCKING"
@@ -70,45 +74,49 @@ CORE PRINCIPLES FOR VIRAL THUMBNAILS:
 
 PROMPT STRUCTURE FOR THUMBNAIL:
 
-Old master painting style thumbnail, dramatic close-up of [MOST SHOCKING ELEMENT FROM SCRIPT], [emotional trigger], classical oil painting technique, chiaroscuro lighting with high contrast, dark moody colors (deep blues, blacks, burgundy), Renaissance or Baroque aesthetic, theatrical composition, canvas texture visible, brushstrokes apparent, ancient painting from 1500s-1800s, [specific details that create curiosity], WITH PAINTED TEXT AT [TOP/BOTTOM] reading "[TEXT HOOK]" in weathered gold lettering like illuminated manuscript, text integrated into the painting composition, aged and classical typography, faded gold or cream color on dark background, text looks carved or painted not overlaid, professional viral thumbnail composition
+Old master painting style thumbnail, dramatic close-up of [MOST SHOCKING ELEMENT FROM SCRIPT], [emotional trigger], classical oil painting technique, chiaroscuro lighting with high contrast, dark moody colors (deep blues, blacks, burgundy), Renaissance or Baroque aesthetic, theatrical composition, canvas texture visible, brushstrokes apparent, ancient painting from 1500s-1800s, [specific details that create curiosity], WITH BOLD BRIGHT TEXT AT [TOP/BOTTOM] reading "[TEXT HOOK]" in BRILLIANT WHITE or VIBRANT GOLD large bold lettering with strong outlines, text must be HIGHLY VISIBLE and CLEAR with maximum readability, thick classical typography with subtle glow effect, bright luminous colors (white/gold/yellow) on very dark background for extreme contrast, text looks like illuminated manuscript but modern and crystal clear, large prominent letters that dominate and pop out from the image, professional viral thumbnail composition with unmissable text
 
 COMPLETE EXAMPLES:
 
 Script about: "Bermuda Triangle mysterious disappearances"
 Output:
 {
-  "thumbnail_prompt": "Old master painting style thumbnail, dramatic close-up of massive dark whirlpool in turbulent ocean with ghostly ship silhouette being swallowed into the vortex, mysterious and terrifying atmosphere, classical oil painting technique, chiaroscuro lighting with high contrast between swirling black waters and ominous stormy sky, deep navy blues and blacks with hints of pale moonlight, Renaissance maritime painting aesthetic, theatrical composition looking down into the deadly spiral, canvas texture visible with dramatic brushstrokes, ancient 1600s seascape painting style, WITH PAINTED TEXT AT TOP reading 'THE TRUTH EXPOSED' in weathered gold illuminated manuscript lettering, text integrated into the dark clouds above like carved ancient inscription, faded gold letters on black background, aged classical typography that looks painted not overlaid, professional viral thumbnail composition",
+  "thumbnail_prompt": "Old master painting style thumbnail, dramatic close-up of massive dark whirlpool in turbulent ocean with ghostly ship silhouette being swallowed into the vortex, mysterious and terrifying atmosphere, classical oil painting technique, chiaroscuro lighting with high contrast between swirling black waters and ominous stormy sky, deep navy blues and blacks with hints of pale moonlight, Renaissance maritime painting aesthetic, theatrical composition looking down into the deadly spiral, canvas texture visible with dramatic brushstrokes, ancient 1600s seascape painting style, WITH BOLD BRIGHT TEXT AT TOP reading 'THE TRUTH EXPOSED' in BRILLIANT WHITE large bold letters with thick outlines and golden glow, text must be crystal clear and highly visible, thick classical typography with luminous effect, bright white and gold colors on pitch black background for extreme contrast, large prominent letters that pop out and dominate the top portion, text looks like illuminated manuscript but modern and unmissable, professional viral thumbnail composition with clear readable text",
   "text_hook": "THE TRUTH EXPOSED",
   "hook_position": "top",
-  "explanation": "Focuses on the most dramatic element (whirlpool swallowing ship) in old master style creating fear and mystery. The text is painted into the stormy sky like an ancient prophecy. Dark Renaissance aesthetic maintains consistency with video images."
+  "explanation": "Focuses on the most dramatic element (whirlpool swallowing ship) in old master style creating fear and mystery. The bright, bold text dominates the stormy sky with maximum visibility. Dark Renaissance aesthetic maintains consistency with video images."
 }
 
 Script about: "Ancient civilization discovered underwater"
 Output:
 {
-  "thumbnail_prompt": "Old master painting style thumbnail, dramatic close-up of colossal ancient stone face emerging from dark underwater depths covered in seaweed, mysterious and awe-inspiring atmosphere, classical oil painting technique, chiaroscuro lighting with dim god rays piercing through murky water illuminating the weathered stone face, deep teal and dark greens with touches of faded gold, Baroque underwater painting aesthetic, low angle perspective looking up at the massive submerged statue, canvas texture visible with flowing brushwork, ancient 1700s painting style, WITH PAINTED TEXT AT BOTTOM reading 'OLDER THAN EGYPT' in carved stone inscription style, text integrated into the underwater rock base like ancient hieroglyphs, cream-colored weathered lettering on dark stone, classical typography that appears chiseled not overlaid, professional viral thumbnail composition",
+  "thumbnail_prompt": "Old master painting style thumbnail, dramatic close-up of colossal ancient stone face emerging from dark underwater depths covered in seaweed, mysterious and awe-inspiring atmosphere, classical oil painting technique, chiaroscuro lighting with dim god rays piercing through murky water illuminating the weathered stone face, deep teal and dark greens with touches of faded gold, Baroque underwater painting aesthetic, low angle perspective looking up at the massive submerged statue, canvas texture visible with flowing brushwork, ancient 1700s painting style, WITH BOLD BRIGHT TEXT AT BOTTOM reading 'OLDER THAN EGYPT' in VIBRANT GOLD large bold letters with bright outline, text must be extremely clear and visible underwater, thick classical typography with glowing luminous effect, brilliant gold and yellow colors on very dark background for maximum contrast, large prominent letters that stand out boldly at the bottom, text looks like glowing carved inscription but crystal clear and modern readable, professional viral thumbnail composition with unmissable bright text",
   "text_hook": "OLDER THAN EGYPT",
   "hook_position": "bottom",
-  "explanation": "Ancient submerged face in old master painting style creates awe and mystery. The text is carved into the stone base like ancient writing. Dark underwater Renaissance aesthetic matches video style perfectly."
+  "explanation": "Ancient submerged face in old master painting style creates awe and mystery. The bright, glowing gold text stands out boldly at the bottom with maximum visibility. Dark underwater Renaissance aesthetic matches video style perfectly."
 }
 
 Script about: "Dyatlov Pass Incident mystery"
 Output:
 {
-  "thumbnail_prompt": "Old master painting style thumbnail, dramatic close-up of torn tent fabric in snowy wilderness with mysterious orange lights glowing in the dark sky above, terrifying and mysterious atmosphere, classical oil painting technique, chiaroscuro lighting with harsh contrast between eerie orange glow and pitch black frozen landscape, deep blacks, dark blues and ominous orange tones, Baroque winter painting aesthetic, tilted perspective showing the ripped tent opening, canvas texture visible with rough expressive brushstrokes, ancient 1600s painting style depicting horror, WITH PAINTED TEXT AT TOP reading 'DEATH BY UNKNOWN FORCE' in weathered gold lettering like old manuscript, text integrated into the dark sky like ominous prophecy, faded gold letters bleeding into black background, aged classical typography that looks hand-painted not overlaid, professional viral thumbnail composition",
+  "thumbnail_prompt": "Old master painting style thumbnail, dramatic close-up of torn tent fabric in snowy wilderness with mysterious orange lights glowing in the dark sky above, terrifying and mysterious atmosphere, classical oil painting technique, chiaroscuro lighting with harsh contrast between eerie orange glow and pitch black frozen landscape, deep blacks, dark blues and ominous orange tones, Baroque winter painting aesthetic, tilted perspective showing the ripped tent opening, canvas texture visible with rough expressive brushstrokes, ancient 1600s painting style depicting horror, WITH BOLD BRIGHT TEXT AT TOP reading 'DEATH BY UNKNOWN FORCE' in BRILLIANT WHITE and BRIGHT YELLOW large bold letters with strong outlines, text must be crystal clear against the dark sky, thick classical typography with intense glow effect, bright white and yellow luminous colors on pitch black background for extreme contrast, large prominent letters that dominate the top portion, text looks like glowing prophecy but modern and perfectly readable, professional viral thumbnail composition with highly visible unmissable text",
   "text_hook": "DEATH BY UNKNOWN FORCE",
   "hook_position": "top",
-  "explanation": "Torn tent and mysterious lights in dark Renaissance style creates instant fear and curiosity. The text appears painted into the ominous sky like a warning from the past. Maintains the old master painting consistency with video images."
+  "explanation": "Torn tent and mysterious lights in dark Renaissance style creates instant fear and curiosity. The bright, bold text dominates the ominous sky with crystal clear visibility like a glowing warning. Maintains the old master painting consistency with video images."
 }
 
 CRITICAL RULES:
 
 ✓ ALWAYS use old master painting style - NO EXCEPTIONS (like the video images)
 ✓ ALWAYS include the text hook PAINTED/INTEGRATED into the image itself
-✓ Text must look like illuminated manuscript, carved stone, or painted lettering
-✓ Text style: weathered gold/cream on dark background, aged, classical
+✓ Text MUST be BRIGHT, CLEAR and HIGHLY VISIBLE - this is CRITICAL
+✓ Text must use BRIGHT COLORS: brilliant white, vibrant gold, bright yellow, luminous cream
+✓ Text must be LARGE, BOLD and have STRONG OUTLINES for maximum clarity
+✓ Text must have EXTREME CONTRAST against very dark background (black/deep blue)
+✓ Add subtle GLOW or LUMINOUS effect to make text pop and stand out
+✓ Text should look classical but with MODERN READABILITY - crystal clear
 ✓ Use chiaroscuro lighting (dramatic light/shadow contrast)
-✓ Dark, moody colors: blacks, deep blues, dark purples, burgundy
+✓ Dark, moody colors for background: blacks, deep blues, dark purples, burgundy
 ✓ Canvas texture and brushstrokes must be visible
 ✓ Renaissance or Baroque aesthetic (1500s-1800s painting style)
 ✓ Analyze the ENTIRE script to find the single most clickable moment
@@ -117,14 +125,17 @@ CRITICAL RULES:
 ✓ Create visual tension/conflict in old painting style
 ✓ Use EXTREME close-ups or dramatic wide shots (no medium shots)
 ✓ Text hook must be PUNCHY and create curiosity gap
+✓ Text must be UNMISSABLE - if someone can't read it instantly, it's wrong
 
 ✗ NEVER use modern/contemporary/digital art style
 ✗ NEVER add text as separate overlay - MUST be painted into image
+✗ NEVER use dark, faded or hard-to-read text colors
+✗ NEVER make text small or with low contrast
 ✗ Don't show the full answer - leave mystery
 ✗ Don't use multiple focal points - ONE hero element
 ✗ Don't forget the old master painting style - IT'S MANDATORY
-✗ Don't make text look modern or digital - must be aged/weathered
 ✗ Don't create boring/safe thumbnails
+✗ Don't make text blend into background - it must POP OUT
 
 OUTPUT FORMAT (JSON only, no markdown):
 
@@ -210,15 +221,14 @@ export async function generateViralThumbnail(script, outputPath, options = {}) {
     // 1. Gera o prompt inteligente com OpenAI
     const thumbnailData = await generateThumbnailPrompt(script, options.model);
 
-    // 2. Gera a imagem com Replicate
-    console.log('\n🖼️  Generating thumbnail image with Replicate...');
+    // 2. Gera a imagem com Replicate usando nano-banana-pro
+    console.log('\n🖼️  Generating thumbnail image with nano-banana-pro...');
     const imageOptions = {
-      width: options.width || 1920,
-      height: options.height || 1080,
+      model: MODELS.NANO_BANANA_PRO,
       aspectRatio: options.aspectRatio || '16:9',
-      outputFormat: 'jpg',
-      outputQuality: 95, // Máxima qualidade para thumbnail
-      safetyTolerance: 2
+      resolution: options.resolution || '2K',
+      outputFormat: 'png',
+      safetyFilterLevel: 'block_only_high'
     };
 
     // Gera imagem com texto JÁ INTEGRADO pela IA
